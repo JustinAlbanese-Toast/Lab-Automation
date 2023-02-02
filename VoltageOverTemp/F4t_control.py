@@ -4,7 +4,7 @@ from enum import Enum as _Enum
 from atexit import register, unregister
 
 # Buffer size to scan for when recieveing over the socket 
-BUF_CHUNK = 10
+BUF_CHUNK = 100
 
 class TempUnits(_Enum):
     """
@@ -139,12 +139,22 @@ class F4TController (Device):
     def stop_profile(self):
         self.send_cmd(':PROGRAM:SELECTED:STATE STOP')
 
-    def get_temperature(self,cloop=1):
-        self.send_cmd(':SOURCE:CLOOP{}:PVALUE?'.format(cloop))
+    def get_temperature(self):
+        #self._clear_buffer()
+        self.send_cmd(':SOURCE:CLOOP1:PVALUE?')
+        PV = self._readline()
+        #self.send_cmd('\n')
+        return PV
+
+    def set_temperature(self,temp,):
+        #self._clear_buffer()
+        self.send_cmd(':SOURCE:CLOOP1:SPOINT {}'.format(temp))
+        #self.send_cmd('\n')
+
+    def check_sp(self, cloop=1):
+        self.send_cmd(':SOURCE:CLOOP{}:SPOINT?'.format(cloop))
         return self._readline()
 
-    def set_temperature(self,temp,cloop=1):
-        self.send_cmd('SOURCE:CLOOP{}:SPOINT {}'.format(cloop,temp))
 
     def is_done(self,ouput_num):
         self.send_cmd(':OUTPUT{}:STATE?'.format(ouput_num))
